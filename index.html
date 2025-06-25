@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Healthy Meal Prep Scheduler with Workouts</title>
+<style>
+  :root {
+    --bg-color: #ffffff;
+    --text-color: #2c3e50;
+    --primary-color-start: #6dd5fa;
+    --primary-color-end: #2980b9;
+    --calorie-low: #27ae60;
+    --calorie-medium: #f39c12;
+    --calorie-high: #e74c3c;
+    --table-border: #ddd;
+    --shopping-bg: #ecf0f1;
+    --shopping-shadow: #bdc3c7;
+    --btn-bg: #2980b9;
+    --btn-hover: #1c5980;
+    --body-bg-gradient-start: #a8edea;
+    --body-bg-gradient-end: #fed6e3;
+  }
+  [data-theme="dark"] {
+    --bg-color: #121212;
+    --text-color: #ecf0f1;
+    --primary-color-start: #4b6cb7;
+    --primary-color-end: #182848;
+    --calorie-low: #2ecc71;
+    --calorie-medium: #f1c40f;
+    --calorie-high: #e74c3c;
+    --table-border: #444;
+    --shopping-bg: #1e1e1e;
+    --shopping-shadow: #333;
+    --btn-bg: #4b6cb7;
+    --btn-hover: #182848;
+    --body-bg-gradient-start: #0f2027;
+    --body-bg-gradient-end: #203a43;
+  }
+
+  @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;600&display=swap');
+
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    font-family: 'Rubik', sans-serif;
+    background: linear-gradient(135deg, var(--body-bg-gradient-start) 0%, var(--body-bg-gradient-end) 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 2rem 1rem;
+    color: var(--text-color);
+    transition: background-color 0.5s ease, color 0.5s ease;
+  }
+  .container {
+    background: var(--bg-color);
+    max-width: 950px;
+    width: 100%;
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    padding: 2rem;
+    transition: background-color 0.5s ease, color 0.5s ease;
+    position: relative;
+  }
+  h1 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1.5rem;
+    table-layout: fixed;
+  }
+  th, td {
+    border: 1px solid var(--table-border);
+    padding: 0.8rem 0.6rem;
+    text-align: center;
+    word-wrap: break-word;
+  }
+  th {
+    background: linear-gradient(90deg, var(--primary-color-start) 0%, var(--primary-color-end) 100%);
+    color: white;
+  }
+  select {
+    width: 100%;
+    padding: 0.4rem;
+    border-radius: 8px;
+    border: 1.8px solid var(--primary-color-end);
+    font-size: 1rem;
+    transition: border-color 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+    background: var(--bg-color);
+    color: var(--text-color);
+  }
+  select:focus {
+    border-color: var(--primary-color-start);
+    outline: none;
+  }
+  .calorie {
+    font-weight: 700;
+    font-size: 0.9rem;
+    border-radius: 12px;
+    padding: 3px 8px;
+    color: white;
+    display: inline-block;
+    transition: background-color 0.3s ease;
+  }
+  .calorie.low {
+    background-color: var(--calorie-low);
+  }
+  .calorie.medium {
+    background-color: var(--calorie-medium);
+  }
+  .calorie.high {
+    background-color: var(--calorie-high);
+  }
+  .summary {
+    font-weight: 600;
+    font-size: 1.2rem;
+    text-align: right;
+    margin-bottom: 1rem;
+  }
+  .shopping-list {
+    background: var(--shopping-bg);
+    border-radius: 15px;
+    padding: 1rem 1.5rem;
+    box-shadow: inset 0 0 15px var(--shopping-shadow);
+    color: var(--text-color);
+  }
+  .shopping-list h2 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: var(--primary-color-end);
+  }
+  .shopping-list ul {
+    list-style: none;
+    padding-left: 0;
+    max-height: 220px;
+    overflow-y: auto;
+  }
+  .shopping-list li {
+    padding: 0.4rem 0;
+    border-bottom: 1px solid var(--shopping-shadow);
+    font-weight: 500;
+    font-size: 1rem;
+  }
+  button {
+    background: var(--btn-bg);
+    color: white;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 20px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: block;
+    margin: 1rem auto 0 auto;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+    user-select: none;
+  }
+  button:hover {
+    background: var(--btn-hover);
+  }
+  /* Scrollbar styling */
+  .shopping-list ul::-webkit-scrollbar {
+    width: 7px;
+  }
+  .shopping-list ul::-webkit-scrollbar-thumb {
+    background-color: var(--primary-color-end);
+    border-radius: 10px;
+  }
+
+  /* Responsive */
+  @media (max-width: 720px) {
+    table, th, td {
+      font-size: 0.85rem;
+    }
+    button {
+      width: 100%;
+    }
+  }
+
+  /* Dark mode toggle button - centered emoji */
+  #theme-toggle {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: var(--btn-bg);
+    border: none;
+    color: white;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.8rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    line-height: 1;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    transition: background-color 0.3s ease;
+    user-select: none;
+  }
+  #theme-toggle:hover {
+    background: var(--btn-hover);
+  }
+
+  /* Sunday Rest Day text */
+  .rest-day {
+    font-weight: 700;
+    color: var(--calorie-medium);
+    font-style: italic;
+  }
+</style>
+</head>
+<body>
+<div class="container" role="main">
+  <button id="theme-toggle" aria-label="Toggle light and dark mode">🌙</button>
+  <h1>Healthy Meal Prep Scheduler with Workouts</h1>
+  <table>
+    <thead>
+      <tr>
+        <th scope="col">Day</th>
+        <th scope="col">Breakfast</th>
+        <th scope="col">Lunch</th>
+        <th scope="col">Dinner</th>
+        <th scope="col">Calories</th>
+        <th scope="col">Workout Group</th>
+      </tr>
+    </thead>
+    <tbody id="meal-table-body">
+      <!-- Rows generated by JS -->
+    </tbody>
+  </table>
+
+  <div class="summary" id="daily-calories">Highest Daily Calories: 0 kcal</div>
+
+  <div class="shopping-list" aria-live="polite" aria-atomic="true">
+    <h2>Shopping List</h2>
+    <ul id="shopping-list-ul">
+      <!-- Shopping list generated by JS -->
+    </ul>
+  </div>
+
+  <button id="reset-btn">Reset Planner</button>
+</div>
+
+<script>
+  const meals = [
+    { name: "Oatmeal with Fruits", calories: 350, ingredients: { "Oats (g)": 50, "Banana (pcs)": 1, "Blueberries (g)": 30, "Milk (ml)": 100 } },
+    { name: "Avocado Toast", calories: 400, ingredients: { "Bread slices": 2, "Avocado (pcs)": 0.5, "Olive oil (tbsp)": 1 } },
+    { name: "Grilled Chicken Salad", calories: 500, ingredients: { "Chicken breast (g)": 150, "Lettuce (g)": 50, "Tomato (pcs)": 1, "Olive oil (tbsp)": 1 } },
+    { name: "Quinoa & Veggies", calories: 450, ingredients: { "Quinoa (g)": 100, "Broccoli (g)": 50, "Carrot (pcs)": 1, "Olive oil (tbsp)": 1 } },
+    { name: "Turkey Sandwich", calories: 600, ingredients: { "Bread slices": 2, "Turkey (g)": 100, "Lettuce (g)": 30, "Mayo (tbsp)": 1 } },
+    { name: "Pasta Primavera", calories: 700, ingredients: { "Pasta (g)": 120, "Bell pepper (pcs)": 1, "Zucchini (pcs)": 1, "Tomato sauce (ml)": 100 } },
+    { name: "Veggie Stir-fry", calories: 550, ingredients: { "Mixed veggies (g)": 150, "Soy sauce (tbsp)": 2, "Tofu (g)": 100 } },
+    { name: "Salmon with Asparagus", calories: 650, ingredients: { "Salmon (g)": 150, "Asparagus (g)": 100, "Lemon (pcs)": 0.5 } },
+    { name: "Greek Yogurt & Nuts", calories: 300, ingredients: { "Greek yogurt (g)": 150, "Mixed nuts (g)": 30 } },
+    { name: "Protein Shake", calories: 350, ingredients: { "Protein powder (g)": 30, "Milk (ml)": 250, "Banana (pcs)": 1 } }
+  ];
+
+  const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  const mealsPerDay = ["breakfast", "lunch", "dinner"];
+  const workoutGroups = ["Upper Body", "Lower Body", "Cardio", "Core", "Full Body", "HIIT", "Rest"];
+
+  // Build table rows dynamically
+  const tbody = document.getElementById("meal-table-body");
+  days.forEach(day => {
+    const tr = document.createElement("tr");
+    tr.setAttribute("data-day", day);
+
+    // Day cell
+    const tdDay = document.createElement("th");
+    tdDay.scope = "row";
+    tdDay.textContent = day;
+    tr.appendChild(tdDay);
+
+    // Meal selects
+    mealsPerDay.forEach(mealType => {
+      const tdMeal = document.createElement("td");
+      const select = document.createElement("select");
+      select.id = `${day}-${mealType}`;
+      select.setAttribute("aria-label", `${day} ${mealType} meal`);
+      const defaultOption = document.createElement("option");
+      defaultOption.value = "";
+      defaultOption.textContent = "-- Select --";
+      select.appendChild(defaultOption);
+
+      meals.forEach(meal => {
+        const option = document.createElement("option");
+        option.value = meal.name;
+        option.textContent = `${meal.name} (${meal.calories} kcal)`;
+        select.appendChild(option);
+      });
+
+      tdMeal.appendChild(select);
+      tr.appendChild(tdMeal);
+    });
+
+    // Calories cell
+    const tdCalories = document.createElement("td");
+    tdCalories.id = `${day}-calories`;
+    tdCalories.textContent = "0 kcal";
+    tr.appendChild(tdCalories);
+
+    // Workout cell
+    const tdWorkout = document.createElement("td");
+    if(day === "Sunday"){
+      // Sunday rest day text only
+      const restSpan = document.createElement("span");
+      restSpan.className = "rest-day";
+      restSpan.textContent = "Rest Day";
+      tdWorkout.appendChild(restSpan);
+    } else {
+      const workoutSelect = document.createElement("select");
+      workoutSelect.id = `${day}-workout`;
+      workoutSelect.setAttribute("aria-label", `${day} workout group`);
+      workoutGroups.forEach(group => {
+        const option = document.createElement("option");
+        option.value = group;
+        option.textContent = group;
+        workoutSelect.appendChild(option);
+      });
+      workoutSelect.value = "Rest";
+      tdWorkout.appendChild(workoutSelect);
+    }
+    tr.appendChild(tdWorkout);
+
+    tbody.appendChild(tr);
+  });
+
+  function loadPlanner() {
+    days.forEach(day => {
+      mealsPerDay.forEach(mealType => {
+        const select = document.getElementById(`${day}-${mealType}`);
+        const saved = localStorage.getItem(`${day}-${mealType}`);
+        if(saved && [...meals.map(m => m.name)].includes(saved)) {
+          select.value = saved;
+        } else {
+          select.value = "";
+        }
+      });
+      if(day !== "Sunday") {
+        const workoutSelect = document.getElementById(`${day}-workout`);
+        const savedWorkout = localStorage.getItem(`${day}-workout`);
+        workoutSelect.value = workoutGroups.includes(savedWorkout) ? savedWorkout : "Rest";
+      }
+    });
+  }
+
+  function updatePlanner() {
+    let highestCalories = 0;
+    const ingredientTotals = {};
+
+    days.forEach(day => {
+      let dayCalories = 0;
+      mealsPerDay.forEach(mealType => {
+        const select = document.getElementById(`${day}-${mealType}`);
+        const mealName = select.value;
+        if(mealName){
+          const meal = meals.find(m => m.name === mealName);
+          dayCalories += meal.calories;
+
+          // Accumulate ingredients for shopping list
+          Object.entries(meal.ingredients).forEach(([ingredient, qty]) => {
+            ingredientTotals[ingredient] = (ingredientTotals[ingredient] || 0) + qty;
+          });
+        }
+      });
+
+      // Update calories display with colored badge
+      const caloriesCell = document.getElementById(`${day}-calories`);
+      caloriesCell.textContent = `${dayCalories} kcal`;
+      caloriesCell.className = "calorie " + (
+        dayCalories < 1000 ? "low" :
+        dayCalories <= 1500 ? "medium" : "high"
+      );
+
+      if(dayCalories > highestCalories) highestCalories = dayCalories;
+    });
+
+    // Update highest calories summary
+    document.getElementById("daily-calories").textContent = `Highest Daily Calories: ${highestCalories} kcal`;
+
+    // Build shopping list
+    const shoppingListUl = document.getElementById("shopping-list-ul");
+    shoppingListUl.innerHTML = "";
+    Object.entries(ingredientTotals).sort((a,b) => a[0].localeCompare(b[0])).forEach(([ingredient, qty]) => {
+      const li = document.createElement("li");
+      li.textContent = `${ingredient}: ${qty}`;
+      shoppingListUl.appendChild(li);
+    });
+
+    // Save current selections to localStorage
+    days.forEach(day => {
+      mealsPerDay.forEach(mealType => {
+        const select = document.getElementById(`${day}-${mealType}`);
+        localStorage.setItem(`${day}-${mealType}`, select.value);
+      });
+      if(day !== "Sunday") {
+        const workoutSelect = document.getElementById(`${day}-workout`);
+        localStorage.setItem(`${day}-workout`, workoutSelect.value);
+      }
+    });
+  }
+
+  // Event listeners for selects
+  days.forEach(day => {
+    mealsPerDay.forEach(mealType => {
+      const select = document.getElementById(`${day}-${mealType}`);
+      select.addEventListener("change", updatePlanner);
+    });
+    if(day !== "Sunday") {
+      const workoutSelect = document.getElementById(`${day}-workout`);
+      workoutSelect.addEventListener("change", updatePlanner);
+    }
+  });
+
+  // Reset button
+  document.getElementById("reset-btn").addEventListener("click", () => {
+    days.forEach(day => {
+      mealsPerDay.forEach(mealType => {
+        const select = document.getElementById(`${day}-${mealType}`);
+        select.value = "";
+      });
+      if(day !== "Sunday") {
+        const workoutSelect = document.getElementById(`${day}-workout`);
+        workoutSelect.value = "Rest";
+      }
+    });
+    updatePlanner();
+    localStorage.clear();
+  });
+
+  // Dark/light mode toggle
+  const themeToggleBtn = document.getElementById("theme-toggle");
+  const currentTheme = localStorage.getItem("theme") || "light";
+
+  function applyTheme(theme) {
+    if(theme === "dark"){
+      document.documentElement.setAttribute("data-theme", "dark");
+      themeToggleBtn.textContent = "☀️";
+    } else {
+      document.documentElement.setAttribute("data-theme", "light");
+      themeToggleBtn.textContent = "🌙";
+    }
+    localStorage.setItem("theme", theme);
+  }
+
+  themeToggleBtn.addEventListener("click", () => {
+    const theme = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    applyTheme(theme);
+  });
+
+  // Initialize planner and theme on load
+  loadPlanner();
+  updatePlanner();
+  applyTheme(currentTheme);
+</script>
+</body>
+</html>
+
